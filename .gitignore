@@ -99,3 +99,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+input/train.csv
+input/test.csv
