@@ -1,0 +1,85 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Dec 30 16:10:13 2017
+
+@author: Alexandre
+
+
+This class implements the following preprocessing methods:
+
+    - rescale every numerical feature with StandardScaler (0 mean and std rescaled)
+    - create new features pickup hour and weekday 
+    - apply logarithm to the trip duration
+"""
+
+
+#%% Import onyl the necessary libraries
+
+from features.preprocessor.abstract_preprocessor import AbstractPreprocessor 
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from datetime import datetime
+
+#%% Implementing class with our one version of the preprocessing methods
+
+class NYCTaxisPreprocessor(AbstractPreprocessor):
+    
+    # override list of categorical features
+    def _set_cat_fetures(self, df):
+        self.categorical_features=[]
+
+    # don't replace nan's because there shouldn't be none
+    def _set_missing_replacements(self, df):
+        self.NaN_replacements = None
+
+    # apply standardscaling to every numeric feature
+    def _set_num_scaler(self, dataframe):
+        self.num_scalers = StandardScaler().fit(dataframe[self.numerical_features])
+
+    # remove unused columns vendor_id, store_and_fwd_flag, passenger_count
+    def _feat_eng(self, dataframe):
+        #drop some unnecessary columns if they exist
+        columns_to_be_dropped = ['vendor_id', 'passenger_count', 'store_and_fwd_flag']
+        dataframe.drop(columns_to_be_dropped, axis=1, inplace = True)
+        #Create time features (hour and weekday)
+        dataframe['pickup_datetime'] = dataframe.pickup_datetime.apply(lambda x: datetime.strptime(x,'%Y-%m-%d %H:%M:%S'))
+        dataframe['pickup_weekday'] = dataframe.pickup_datetime.apply(datetime.weekday)
+        dataframe['pickup_hour'] = dataframe.pickup_datetime.apply(lambda x: x.hour)
+
+        #calculate rescaled distances (Euclidean + Manhattan)
+        dataframe['Eucl_distance'] = np.sqrt(
+                                    (dataframe.dropoff_latitude - dataframe.pickup_latitude).pow(2) +
+                                    (dataframe.dropoff_longitude - dataframe.pickup_longitude).pow(2) )
+
+        dataframe['Manh_distance'] = ( (dataframe.dropoff_latitude - dataframe.pickup_latitude).abs() +
+                                (dataframe.dropoff_longitude - dataframe.pickup_longitude).abs())
+
+    # apply to the predicting column
+    def _feat_eng_train(self, dataframe):
+        dataframe['dropoff_datetime'] = dataframe.dropoff_datetime.apply(lambda x: datetime.strptime(x,'%Y-%m-%d %H:%M:%S'))
+        dataframe['log_duration'] = np.log(dataframe.trip_duration)
+        self.append_cols_to_predict('log_duration')
+
+#%% Testing
+
+if __name__ == '__main__':    
+    data_preprocessor = NYCTaxisPreprocessor(["trip_duration"])
+
+
+    train_dataframe = pd.read_csv('..\\input\\train_subsampled.csv', index_col='id')
+    test_dataframe = pd.read_csv("..\\input\\test_subsampled.csv", index_col='id')
+
+    data_preprocessor.prepare(train_dataframe)
+    X_train, y_train = data_preprocessor.cook_and_split(train_dataframe)
+    X_test, _ = data_preprocessor.cook_and_split(test_dataframe)
+    
+    #tests
+    #test if there are any NaNs
+    assert(X_train.isnull().sum().sum() == 0)
+    assert(X_test.isnull().sum().sum() == 0)
+    
+    #test the outputs have the correct shapes
+    assert(X_train.shape == (100000, 10))
+    assert(y_train.shape == (100000, 1))
+    assert(X_test.shape == (10000, 9))
