@@ -16,8 +16,10 @@ from features.abstract_features import AbstractFeatures
 from abc import ABCMeta
 from abc import abstractmethod
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+from pandas.api.types import is_string_dtype
+from pandas.api.types import is_numeric_dtype
 
 #%% Preprocess the data sets
 class AbstractPreprocessor(AbstractFeatures):
@@ -81,12 +83,12 @@ class AbstractPreprocessor(AbstractFeatures):
     #### Methods that shouldn't need to be overwritten
     # get set of independent variables
     def get_X(self, df):
-        return df.loc[:, [col for col in df.columns if col not in self._cols_to_predict]]
+        return df[[col for col in df.columns if col not in self._cols_to_predict]]
 
 
     # get set of dependent variables
     def get_y(self, df):
-        return df.loc[:, self._cols_to_predict]
+        return df[self._cols_to_predict]
 
 
     # method to check if a given dataframe is for training or testing
@@ -133,7 +135,7 @@ class AbstractPreprocessor(AbstractFeatures):
     # method to set the list of features categorical
     def _set_cat_features(self, training_data_frame):
         self.categorical_features   = [c for c in training_data_frame
-            if training_data_frame[c].dtype == np.dtype('O') and
+            if is_string_dtype(training_data_frame[c]) and
                 c not in self._cols_to_predict and
                 c in self._list_of_columns]
 
@@ -141,7 +143,7 @@ class AbstractPreprocessor(AbstractFeatures):
     # method to set the list of features numerical
     def _set_num_features(self, training_data_frame):
         self.numerical_features     = [c for c in training_data_frame
-            if training_data_frame[c].dtype != np.dtype('O') and
+            if is_numeric_dtype(training_data_frame[c]) and
                 c not in self._cols_to_predict and
                 c in self._list_of_columns]
 
