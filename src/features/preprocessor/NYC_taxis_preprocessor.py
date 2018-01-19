@@ -18,7 +18,6 @@ This class implements the following preprocessing methods:
 from features.preprocessor.abstract_preprocessor import AbstractPreprocessor 
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 from datetime import datetime
 
 #%% Implementing class with our one version of the preprocessing methods
@@ -32,10 +31,6 @@ class NYCTaxisPreprocessor(AbstractPreprocessor):
     # don't replace nan's because there shouldn't be none
     def _set_missing_replacements(self, df):
         self.NaN_replacements = None
-
-    # apply standardscaling to every numeric feature
-    def _set_num_scaler(self, dataframe):
-        self.num_scalers = StandardScaler().fit(dataframe[self.numerical_features])
 
     # remove unused columns vendor_id, store_and_fwd_flag, passenger_count
     def _feat_eng(self, dataframe):
