@@ -62,8 +62,8 @@ if __name__ == '__main__':
     data_preprocessor = NYCTaxisPreprocessor(["trip_duration"])
 
 
-    train_dataframe = pd.read_csv('..\\input\\train_subsampled.csv', index_col='id')
-    test_dataframe = pd.read_csv("..\\input\\test_subsampled.csv", index_col='id')
+    train_dataframe = pd.read_csv('..\\input\\train.csv', index_col='id',nrows=1000)
+    test_dataframe = pd.read_csv("..\\input\\test.csv", index_col='id',nrows=1000)
 
     data_preprocessor.prepare(train_dataframe)
     X_train, y_train = data_preprocessor.cook_and_split(train_dataframe)
@@ -75,6 +75,6 @@ if __name__ == '__main__':
     assert(X_test.isnull().sum().sum() == 0)
     
     #test the outputs have the correct shapes
-    assert(X_train.shape == (100000, 10))
-    assert(y_train.shape == (100000, 1))
-    assert(X_test.shape == (10000, 9))
+    assert X_train.shape == (1000,10), "X_train.shape should be {}, and is {}.".format((1000,10), X_train.shape)
+    assert X_test.shape == (1000,9), "X_test.shape should be {}, and is {}.".format((1000,9), X_test.shape)
+    assert y_train.shape == (1000,2), "y_train.shape should be {}, and is {}.".format((1000,2), y_train.shape)

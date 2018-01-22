@@ -6,8 +6,8 @@ Created on Sat Dec 30 15:02:38 2017
 """
 
 #%% 0.1 Import libraries
-from features.preprocessor.NYC_taxis_preprocessor import NYCTaxisPreprocessor
-from features.preprocessor.NYC_taxis_feature_selector import NYCTaxisFeatureSelector
+from framework_extensions.NYC_taxis_preprocessor import NYCTaxisPreprocessor
+from framework_extensions.NYC_taxis_feature_selector import NYCTaxisFeatureSelector
 
 import pandas as pd
 import numpy as np
@@ -15,8 +15,8 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neighbors import RadiusNeighborsRegressor
 #%% 0.2 Import datasets
-train_dataframe = pd.read_csv('..\\input\\train.csv', index_col='id')
-test_dataframe = pd.read_csv("..\\input\\test.csv", index_col='id')
+train_dataframe = pd.read_csv('..\\input\\train.csv', index_col='id', nrows=10000)
+test_dataframe = pd.read_csv("..\\input\\test.csv", index_col='id', nrows=10000)
 
 #%% 1.0 Preprocess the data
 data_preprocessor = NYCTaxisPreprocessor('trip_duration')
